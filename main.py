@@ -34,8 +34,8 @@ def main():
             [
                 CommandHandler(conversation.cmd_mining, conversation.cmd_mining_func),
                 CommandHandler(conversation.cmd_add, conversation.cmd_add_func),
-                CommandHandler(conversation.cmd_edit, conversation.cmd_edit_func),
-                CommandHandler(conversation.cmd_timer, conversation.cmd_timer_func),
+                # CommandHandler(conversation.cmd_edit, conversation.cmd_edit_func),
+                # CommandHandler(conversation.cmd_timer, conversation.cmd_timer_func),
                 MessageHandler(Filters.all, default)
             ],
             conversation.MINING:
@@ -50,8 +50,14 @@ def main():
             [
                 MessageHandler(Filters.text('normal'), conversation.add2_use_normal_keyboard),
                 MessageHandler(Filters.text('new custom keyboard'), conversation.add2_create_custom_keyboard),
-                MessageHandler(Filters.text, conversation.add2_use_custom_keyboard)
-            ]
+            ],
+            conversation.ADD3:
+                [
+                    CommandHandler(conversation.cmd_keyboard_finished, conversation.add3_keyboard_finished),
+                    CommandHandler(conversation.cmd_next_row, conversation.add3_next_row),
+                    CommandHandler(conversation.cmd_next_col, conversation.add3_next_col),
+                    MessageHandler(Filters.text, conversation.add3_set_key),
+                ]
         },
 
         # A list of handlers that might be used if the user is in a conversation, but every handler for their current

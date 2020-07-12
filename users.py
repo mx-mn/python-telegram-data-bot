@@ -1,22 +1,10 @@
 class Question:
-    ID = 0
-    Text = ''
-    blocked = False
-    custom = False
+    id = 0
+    text = ''
+    is_blocked = False
+    is_custom = False
 
     keyboard = [[]]
-
-    def get_text(self):
-        return self.Text
-
-    def get_keyboard(self):
-        return self.keyboard
-
-    def set_text(self, text):
-        self.Text = text
-
-    def set_keyboard(self, keyboard):
-        self.keyboard = keyboard
 
     def set_key(self, text, x, y):
         if (y > len(self.keyboard)) or (x > len(self.Keyboard[y])):
@@ -26,30 +14,23 @@ class Question:
 
 
 class User:
-    ID = 0
-    currentQuestion = 0
+    id = 0
+    question_counter = 0
     questions = []
-    keyboards = []
-    Notification = False
-    NotifyTime = 0
-
-    def __init__(self):
-        ID = 1
+    notifying = False
+    notify_time = 0
 
     def add_question(self, question):
         self.questions.append(question)
 
-    def add_keyboard(self, keyboard):
-        self.keyboards.append(keyboard)
-
     def get_next_question(self):
 
-        if len(self.questions) > self.currentQuestion:
-            self.currentQuestion += 1
-            return self.questions[self.currentQuestion]
+        if len(self.questions) > self.question_counter:
+            self.question_counter += 1
+            return self.questions[self.question_counter]
 
         else:
-            self.currentQuestion = 0
+            self.question_counter = 0
             return False
 
     def delete_question(self, id):
@@ -59,14 +40,10 @@ class User:
 
         else:
             print("out of bounds")
-
-    def edit_reminder(self, hh, mm):
-        if hh < 24 and mm < 60:
-            print("not implemented Yet")
     
-    def block_question(self, id, state):
+    def block_question(self, id):
         if len(self.questions) < id:
-            self.questions[id].blocked = state
+            self.questions[id].blocked = not self.questions[id].blocked
         else:
             print("out of bounds")
  
