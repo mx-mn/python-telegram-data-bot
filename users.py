@@ -1,3 +1,5 @@
+from telegram import ReplyKeyboardMarkup
+
 class Question:
     id = 0
     text = ''
@@ -12,6 +14,13 @@ class Question:
             print("out of bounds")
         else:
             self.keyboard[x][y] = text
+
+    def get_markup(self):
+        if self.is_custom:
+            return ReplyKeyboardMarkup(self.keyboard,
+                                       one_time_keyboard=True)
+        else:
+            return None
 
 
 class User:
