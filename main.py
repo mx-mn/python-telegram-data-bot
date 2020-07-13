@@ -14,7 +14,7 @@ def fallback(update, context):
 
 
 def main():
-    bot_token = "772700511:AAGDECkjwAt1bePvmz_jdLlWworqHm0aO68"
+    bot_token = "TOKEN"
 
     updater = Updater(bot_token, use_context=True)
     dispatcher = updater.dispatcher
