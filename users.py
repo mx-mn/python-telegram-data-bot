@@ -1,6 +1,7 @@
 class Question:
     id = 0
     text = ''
+    response = ''
     is_blocked = False
     is_custom = False
 
@@ -30,8 +31,16 @@ class User:
             return self.questions[self.question_counter]
 
         else:
-            self.question_counter = 0
-            return False
+            raise Exception("last question reached")
+
+    def store_response(self, response):
+        if self.question_counter > 0:
+            n = 1
+
+            while self.questions[self.question_counter - n].is_blocked:
+                n += 1
+
+            self.questions[self.question_counter-n].response = response
 
     def delete_question(self, id):
 
@@ -39,11 +48,10 @@ class User:
             del self.questions[id]
 
         else:
-            print("out of bounds")
-    
+            raise Exception("out of Bounds")
+
     def block_question(self, id):
         if len(self.questions) < id:
             self.questions[id].blocked = not self.questions[id].blocked
         else:
-            print("out of bounds")
- 
+            raise Exception("out of Bounds")

@@ -1,6 +1,7 @@
 
 from telegram.ext import Updater, ConversationHandler, CommandHandler, MessageHandler, Filters
 import conversation
+import mining
 
 
 def default(update, context):
@@ -24,7 +25,9 @@ def main():
 
         # A list of Handler objects that can trigger the start of the conversation.
         # Type:	List[telegram.ext.Handler]
-        entry_points=[MessageHandler(Filters.all, default)],
+        entry_points=[
+            CommandHandler(conversation.cmd_start, conversation.cmd_start_func),
+            MessageHandler(Filters.all, default)],
 
         # A dict that defines the different states of conversation a user can be in and one or more associated Handler
         # objects that should be used in that state. Type:	Dict[object, List[telegram.ext.Handler]]
