@@ -17,12 +17,14 @@ def collect(update, context):
     otherwise, will return to MENU.
     """
     user = conv.get_current_user(update)
+
     if user.question_counter != 0:
         user.store_response(update.message.text)
 
     try:
         question = user.get_next_question()
     except:
+        user.upload_responses_to_database()
         update.message.reply_text('No Questions left to answer')
         return conv.MENU
     else:

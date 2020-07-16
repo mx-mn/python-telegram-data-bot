@@ -4,7 +4,9 @@
 # to read :
 # msg = update.message.text
 
-from users import Question, User
+from ClassUser import User
+from ClassQuestion import Question
+from ClassDB import Database
 
 MENU, MINING, ADD1, ADD2, ADD3, ADD4 = range(6)
 
@@ -23,7 +25,13 @@ menu_cmd_list = [cmd_mining, cmd_add, cmd_edit, cmd_timer]
 
 all_keyboards = ['normal', 'new custom keyboard']
 
-test_user = User()
+
+db = Database("mongodb+srv://MASTER:9NZc9agZd21YP9nL@cluster0.umetu"
+              ".azure.mongodb.net/mydatabase?retryWrites=true&w"
+              "=majority", "mydatabase", "python_telegram_bot")
+
+test_user = User("12344567", db)
+users = [test_user]
 
 
 def sprint_cmd_list(cmd_list):
@@ -45,4 +53,19 @@ def cmd_start_func(update, context):
     reply_text += sprint_cmd_list(menu_cmd_list)
     update.message.reply_text(reply_text)
 
+    if not user_exist(update, context):
+        u = User(str(update.message.chat_id), db)
+        users.append(u)
+        db.add_user(u)
+        # add user to the database
+
     return MENU
+
+
+def user_exist(update, context):
+    for user in users:
+        if user.chat_id == update.message.chat_id:
+            return True
+
+    return False
+
