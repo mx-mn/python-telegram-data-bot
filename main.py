@@ -1,6 +1,6 @@
 
 from telegram.ext import Updater, ConversationHandler, CommandHandler, MessageHandler, Filters
-import conv
+import Bot
 import mining
 import add
 
@@ -28,7 +28,7 @@ def main():
         # the start of the conversation.
         # Type:	List[telegram.ext.Handler]
         entry_points=[
-            CommandHandler(conv.cmd_start, conv.cmd_start_func),
+            CommandHandler(Bot.cmd_start, Bot.cmd_start_func),
             MessageHandler(Filters.all, default)],
 
         # A dict that defines the different states of conversation
@@ -37,43 +37,43 @@ def main():
         # Type:	Dict[object, List[telegram.ext.Handler]]
         states=
         {
-            conv.MENU:
+            Bot.MENU:
             [
-                CommandHandler(conv.cmd_mining,
+                CommandHandler(Bot.cmd_mining,
                                mining.start),
-                CommandHandler(conv.cmd_add,
+                CommandHandler(Bot.cmd_add,
                                add.start),
                 # CommandHandler(conversation.cmd_edit, conversation.cmd_edit_func),
                 # CommandHandler(conversation.cmd_timer, conversation.cmd_timer_func),
                 MessageHandler(Filters.all,
                                default)
             ],
-            conv.MINING:
+            Bot.MINING:
             [
                 MessageHandler(Filters.text,
                                mining.collect)
             ],
-            conv.ADD1:
+            Bot.ADD1:
             [
                 MessageHandler(Filters.text,
                                add.question_text_defined)
             ],
-            conv.ADD2:
+            Bot.ADD2:
             [
                 MessageHandler(Filters.text('normal'),
                                add.std_keyb_used),
                 MessageHandler(Filters.text('new custom keyboard'),
                                add.use_custom_keyb),
             ],
-            conv.ADD3:
+            Bot.ADD3:
                 [
-                    CommandHandler(conv.cmd_next_row,
+                    CommandHandler(Bot.cmd_next_row,
                                    add.next_row),
-                    CommandHandler(conv.cmd_prev_col,
+                    CommandHandler(Bot.cmd_prev_col,
                                    add.prev_col),
-                    CommandHandler(conv.cmd_prev_row,
+                    CommandHandler(Bot.cmd_prev_row,
                                    add.prev_row),
-                    CommandHandler(conv.cmd_keyboard_finished,
+                    CommandHandler(Bot.cmd_keyboard_finished,
                                    add.keyb_done),
                     MessageHandler(Filters.text,
                                    add.set_key),

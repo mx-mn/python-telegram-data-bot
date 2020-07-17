@@ -5,18 +5,19 @@ from ClassDB import Database
 class User:
     database = None
     chat_id = 0
-    question_counter = 0
-    question_list = []
+    next_question = 0
+    prev_question = 0
     notifying = False
     notify_time = 0
 
     def __init__(self, chat_id, database):
         self.chat_id = chat_id
         self.database = database
+        self.next_question = 0
+        print("user created")
 
     def add_question(self, question):
         """Append question at end of question_list and database."""
-        self.question_list.append(question)
         self.database.add_question(self.chat_id,
                                    question.text,
                                    question.is_blocked,
@@ -25,9 +26,28 @@ class User:
 
     def get_next_question(self):
         """Return the question object from question_list."""
-        if self.question_counter < len(self.question_list):
-            question = self.question_list[self.question_counter]
-            self.question_counter += 1
+        user = self.database.get_user(self.chat_id)
+
+        # skip blocked questions
+        while user["questions"][self.next_question]["is_blocked"]:
+            self.next_question += 1
+
+        # remember index of previous non blocked question
+        self.prev_question = self.next_question
+
+        if self.next_question < len(user["questions"]):
+            question = Question()
+            question.text = user["questions"][
+                self.next_question]["text"]
+            question.keyboard = user["questions"][
+                self.next_question]["keyboard"]
+            question.is_custom = user["questions"][
+                self.next_question]["is_custom"]
+            question.is_blocked = user["questions"][
+                self.next_question]["is_blocked"]
+            question.id = self.next_question
+
+            self.next_question += 1
             return question
 
         else:
@@ -35,30 +55,19 @@ class User:
 
     def store_response(self, response):
         """store the user response in corresponding question."""
-        n = 1
+        self.database.add_data_to_question(self.chat_id,
+                                           self.prev_question,
+                                           response)
 
-        while self.question_list[self.question_counter -
-                                 n].is_blocked:
-            n += 1
+    def block_question(self, question_pos):
+        self.database.change_question_attr(self.chat_id,
+                                           question_pos,
+                                           "is_blocked", True)
 
-        self.question_list[
-            self.question_counter - n].response = response
-
-    def block_question(self, id):
-        """Toggles the is_blocked flag."""
-        if len(self.question_list) < id:
-            self.question_list[id].blocked = not self.question_list[
-                id].blocked
-        else:
-            raise Exception("out of Bounds")
-
-    def upload_responses_to_database(self):
-        """Loads the mined data stored in question_list into the
-        database."""
-        for q in self.question_list:
-            self.database.add_data_to_question(self.chat_id,
-                                               q.text, q.response)
-
+    def unblock_question(self, question_pos):
+        self.database.change_question_attr(self.chat_id,
+                                           question_pos,
+                                           "is_blocked", False)
 
 # TESTING
 def test():
@@ -71,32 +80,59 @@ def test():
     user1 = User("h39834t0", db)
     user2 = User("13501253", db)
 
+
     db.add_user(user1.chat_id)
     db.add_user(user2.chat_id)
 
-    text1 = "wie ist das wetter heut so?"
-    text2 = "wie ist die Luft heut so?"
+    text1 = "Frage 1?"
+    text2 = "Frage 2?"
+    text3 = "Frage 3?"
+    text4 = "Frage 4?"
 
-    db.add_question(user1.chat_id, text1,
+    db.add_question(user1.chat_id, "blocked Question 1 with custom?",
+                    True, True, [["button"],["button"]])
+    db.add_question(user1.chat_id, "unblocked Question 2 ?",
+                    False, False, [[]])
+    db.add_question(user1.chat_id, "not blcoked Question with custom",
+                    False, True, [["button", "butti!"],["button"]])
+    db.add_question(user1.chat_id, "blocked Question §?",
                     True, False, [[]])
-    db.add_question(user2.chat_id, text1,
-                    True, False, [[]])
-    db.add_question(user1.chat_id, text2,
-                    True, False, [[]])
-    db.add_question(user2.chat_id, text2,
-                    True, True, [[]])
 
-    for i in range(5):
-        db.add_data_to_question(user1.chat_id, text1,
-                                "entry " + str(i))
+    db.add_question(user2.chat_id, "not blocked Question",
+                    False, False, [[]])
+    db.add_question(user2.chat_id, "not blocked Question with "
+                                   "custom keyboard",
+                    False, True, [["button1"]])
 
-    for i in range(3):
-        db.add_data_to_question(user1.chat_id, text2,
-                                "entry " + str(i))
+    db.add_question(user2.chat_id, "not blocked Question",
+                    False, False, [[]])
+    db.add_question(user2.chat_id, "not blocked Question with "
+                                   "custom keyboard",
+                    False, True, [["button1"]])
+    while True:
+        try:
+            q = user1.get_next_question()
+            user1.store_response("response")
+            print(q.text)
+        except:
+            break
 
-    for i in range(40):
-        db.add_data_to_question(user2.chat_id, text1,
-                                "entry " + str(i))
+    while True:
+        try:
+            q = user2.get_next_question()
+            user2.store_response("response")
+            print(q.text)
+        except:
+            break
 
+    user2.block_question(2)
 
-test()
+    while True:
+        try:
+            q = user2.get_next_question()
+            user2.store_response("response")
+            print(q.text)
+        except:
+            break
+
+# test()

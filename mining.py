@@ -1,11 +1,12 @@
 from telegram import ReplyKeyboardMarkup
-import conv
+import Bot
 
 
 def start(update, context):
     """Start the data collection process with user."""
-    user = conv.get_current_user(update)
-    user.question_counter = 0
+    user = Bot.get_current_user(update, context)
+    user.next_question = 0
+    Bot.set_current_user(update, context, user)
     return collect(update, context)
 
 
@@ -16,21 +17,19 @@ def collect(update, context):
     user-class. Then if there is a next question it will be asked.
     otherwise, will return to MENU.
     """
-    user = conv.get_current_user(update)
+    user = Bot.get_current_user(update, context)
 
-    if user.question_counter != 0:
+    if user.next_question > 0:
         user.store_response(update.message.text)
 
     try:
         question = user.get_next_question()
     except:
-        user.upload_responses_to_database()
+        # user.upload_responses_to_database()
         update.message.reply_text('No Questions left to answer')
-        return conv.MENU
+        return Bot.MENU
     else:
         reply_text = question.text
         markup = question.get_markup()
-
         update.message.reply_text(reply_text, reply_markup=markup)
-        user.question_counter += 1
-        return conv.MINING
+        # return conv.MINING # is redundant
