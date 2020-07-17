@@ -15,8 +15,13 @@ class User:
         self.database = database
 
     def add_question(self, question):
-        """Append question at end of question_list."""
+        """Append question at end of question_list and database."""
         self.question_list.append(question)
+        self.database.add_question(self.chat_id,
+                                   question.text,
+                                   question.is_blocked,
+                                   question.is_custom,
+                                   question.keyboard)
 
     def get_next_question(self):
         """Return the question object from question_list."""
