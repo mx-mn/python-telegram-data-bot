@@ -1,0 +1,21 @@
+{
+  "user_info" : {
+    "chat_id" : chat_id,
+    "notify_time" : notify_time,
+    "questions" : [
+      {
+        "question_id" : question_id,
+        "text" : text,
+        "is_blocked" : is_blocked,
+        "is_custom" : is_custom,
+        "keyboard" : [[]],
+      }
+    ]
+  },
+  "user_data" :
+
+    {
+      <question_id> :  [data1, data2, data3]
+    }
+
+}

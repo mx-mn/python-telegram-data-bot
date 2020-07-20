@@ -1,62 +1,71 @@
-import Bot
+import General
 from telegram import ReplyKeyboardMarkup
 
 latest_question = "new_question"
-create_keyb_cmd_list = [Bot.cmd_prev_col,
-                        Bot.cmd_prev_row,
-                        Bot.cmd_next_row,
-                        Bot.cmd_keyboard_finished]
+create_keyb_cmd_list = [General.cmd_prev_col,
+                        General.cmd_prev_row,
+                        General.cmd_next_row,
+                        General.cmd_keyboard_finished]
 
 
 def start(update, context):
     reply_text = 'Type the Question you want to ask yourself!'
     update.message.reply_text(reply_text)
 
-    return Bot.ADD1
+    return General.ADD1
 
 
 def question_text_defined(update, context):
-    new_question = Bot.Question()
-    new_question.text = update.message.text
-    context.chat_data[latest_question] = new_question
+    cid = update.message.chat_id
+    user = General.get_user(cid)
+    user.temp_question = General.Question()
+    user.temp_question.text = update.message.text
 
     reply_text = 'Choose a Keyboard or create a new one'
-    reply_markup = ReplyKeyboardMarkup.from_row(Bot.all_keyboards)
+    reply_markup = ReplyKeyboardMarkup.from_row(
+        General.all_keyboards, one_time_keyboard=True)
     update.message.reply_text(reply_text, reply_markup=reply_markup)
 
-    return Bot.ADD2
+    return General.ADD2
 
 
 def std_keyb_used(update, context):
-    new_question = context.chat_data[latest_question]
-    new_question.custom = False
+    cid = update.message.chat_id
+    user = General.get_user(cid)
+    user.temp_question.is_custom = False
 
     return keyb_done(update, context)
 
 
 def use_custom_keyb(update, context):
-    new_question = context.chat_data[latest_question]
-    new_question.custom = True
+    cid = update.message.chat_id
+    user = General.get_user(cid)
+    user.temp_question.is_custom = True
 
     context.chat_data["row"] = 0
     context.chat_data["col"] = 0
 
-    # TODO: add desc of what to do next to reply_text
-    reply_text = Bot.sprint_cmd_list(create_keyb_cmd_list)
+    reply_text = 'You are something else! So let me explain.\nAdd a ' \
+                 'button by just sending the text it should say. ' \
+                 'Then you have the commands below to control the ' \
+                 'process.\n'
+    reply_text += General.sprint_cmd_list(create_keyb_cmd_list)
     update.message.reply_text(reply_text)
 
-    return Bot.ADD3
+    return General.ADD3
 
 
 def next_row(update, context):
     """Increase the row, append one if necessary."""
-    new_question = context.chat_data[latest_question]
+    cid = update.message.chat_id
+    user = General.get_user(cid)
+
     row = context.chat_data["row"] + 1
     context.chat_data["col"] = 0
 
     # append row when index exceeded
-    if row == len(new_question.keyboard):
-        new_question.keyboard.append([])
+    if row == len(user.temp_question.keyboard):
+        user.temp_question.keyboard.append([])
 
     context.chat_data["row"] = row
 
@@ -78,34 +87,40 @@ def prev_col(update, context):
 
 def set_key(update, context):
     """Set the received msg as key, print current keyboard + cmds."""
-    new_question = context.chat_data[latest_question]
     row = context.chat_data["row"]
     col = context.chat_data["col"]
 
-    new_question.keyboard[row].insert(col, update.message.text)
+    cid = update.message.chat_id
+    user = General.get_user(cid)
+    user.temp_question.keyboard[row].insert(col, update.message.text)
+
     next_col(update, context)
 
-    reply_text = sprint_keyboard(update, context) + '\n' + \
-                 Bot.sprint_cmd_list(create_keyb_cmd_list)
+    reply_text = user.temp_question.sprint_keyboard() + '\n' + \
+                 General.sprint_cmd_list(create_keyb_cmd_list)
     update.message.reply_text(reply_text)
 
 
 def keyb_done(update, context):
-    new_question = context.chat_data[latest_question]
-    user = Bot.get_current_user(update, context)
-    user.add_question(new_question)
+    try:
+        cid = update.message.chat_id
+        user = General.get_user(cid)
+        user.add_question(user.temp_question)
+        reply_text = "Great, I like it!" + '\n' \
+                     + General.sprint_cmd_list(General.menu_cmd_list)
 
-    reply_text = "Great, I like it!" + '\n' \
-                 + Bot.sprint_cmd_list(Bot.menu_cmd_list)
+        update.message.reply_text(reply_text)
+        return General.MENU
 
-    update.message.reply_text(reply_text)
-
-    return Bot.MENU
+    except Exception as E:
+        print(E)
 
 
 def sprint_keyboard(update, context):
     """Returns multi-line string of current keyboard."""
-    new_question = context.chat_data[latest_question]
+    cid = update.message.chat_id
+    user = General.get_user(cid)
+    new_question = user.temp_question
     ret = ''
     for row in new_question.keyboard:
         for key in row:
