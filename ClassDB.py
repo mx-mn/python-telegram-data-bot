@@ -1,8 +1,54 @@
-import pprint
-
 from pymongo import MongoClient
 from telegram import ReplyKeyboardMarkup
-from General import actual_db, init
+
+global actual_users
+global actual_db
+
+
+def init():
+    global actual_users
+    global actual_db
+
+    actual_db = Database(
+        "mongodb+srv://MASTER:9NZc9agZd21YP9nL@cluster0.umetu"
+        ".azure.mongodb.net/mydatabase?retryWrites=true&w"
+        "=majority", "mydatabase", "python_telegram_bot")
+
+    # TODO: comment the reset
+    # actual_db.collection.delete_many({})
+
+    actual_users = actual_db.get_all_users()
+
+
+def get_user(chat_id):
+    """Returns the user object of the current update."""
+    try:
+        global actual_users
+        u = actual_users[chat_id]
+        return u
+
+    except Exception as E:
+        print(E)
+
+
+def sprint_cmd_list(cmd_list):
+    """Returns column of click-able commands from list."""
+    try:
+        ret = ''
+        for cmd in cmd_list:
+            ret += '/' + cmd + '\n'
+        return ret
+    except Exception as E:
+        print(E)
+
+
+def set_user(user):
+    """Inserts user if not existing, otherwise overrides existing."""
+    try:
+        global actual_users
+        actual_users[user.chat_id] = user
+    except Exception as E:
+        print(E)
 
 
 class Question:
@@ -11,38 +57,52 @@ class Question:
                  is_blocked=False,
                  is_custom=False,
                  keyboard=None):
-        """Constructor with default values."""
-        self.question_id = question_id
-        self.text = text
-        self.is_blocked = is_blocked
-        self.is_custom = is_custom
+        try:
+            self.question_id = question_id
+            self.text = text
+            self.is_blocked = is_blocked
+            self.is_custom = is_custom
 
-        if keyboard is None:
-            self.keyboard = [[]]
-        else:
-            self.keyboard = keyboard
+            if keyboard is None:
+                self.keyboard = [[]]
+            else:
+                self.keyboard = keyboard
+        except Exception as E:
+            print(E)
 
     def set_key(self, text, x, y):
-        if (y > len(self.keyboard)) or (x > len(self.Keyboard[y])):
-            print("out of bounds")
-        else:
-            self.keyboard[x][y] = text
+        try:
+            if (y > len(self.keyboard)) or (
+                    x > len(self.Keyboard[y])):
+                print("out of bounds")
+            else:
+                self.keyboard[x][y] = text
+        except Exception as E:
+            print(E)
 
     def get_markup(self):
-        if self.is_custom:
-            return ReplyKeyboardMarkup(self.keyboard,
-                                       one_time_keyboard=True)
-        else:
-            return None
+        try:
+            if self.is_custom:
+                return ReplyKeyboardMarkup(self.keyboard,
+                                           one_time_keyboard=True)
+            else:
+                return None
+
+        except Exception as E:
+            print(E)
 
     def sprint_keyboard(self):
         """Returns multi-line string of current keyboard."""
-        ret = ''
-        for row in self.keyboard:
-            for key in row:
-                ret += '[' + key + '] '
-            ret += '\n'
-        return ret
+        try:
+            ret = ''
+            for row in self.keyboard:
+                for key in row:
+                    ret += '[' + key + '] '
+                ret += '\n'
+            return ret
+
+        except Exception as E:
+            print(E)
 
 
 def question_dict_to_obj(question_dict):
@@ -70,84 +130,81 @@ def question_obj_to_dict(question):
 class Database:
     def __init__(self, connection_string, database_name,
                  collection_name):
-        self.client = MongoClient(connection_string)
-        self.database = self.client.get_database(database_name)
-        self.collection = self.database[collection_name]
+        try:
+            self.client = MongoClient(connection_string)
+            self.database = self.client.get_database(database_name)
+            self.collection = self.database[collection_name]
+
+        except Exception as E:
+            print(E)
 
     def add_user(self, user):
         """Add a user obj to the Database."""
-        u = \
-            {
-                "user_info": {
-                    "chat_id": user.chat_id,
-                    "notify_time": user.notify_time,
-                    "questions": user.questions
-                },
-                "user_data": {}
-            }
-        self.collection.insert_one(u)
+        try:
+            u = \
+                {
+                    "user_info": {
+                        "chat_id": user.chat_id,
+                        "notify_time": user.notify_time,
+                        "questions": user.questions
+                    },
+                    "user_data": {}
+                }
+            self.collection.insert_one(u)
 
-        print("DEBUG::add_user() user added to database with "
-              "chat_id : " + str(user.chat_id))
+        except Exception as E:
+            print(E)
 
     def add_question(self, question, chat_id):
-        q = question_obj_to_dict(question)
-        my_query = {"user_info.chat_id": chat_id}
-        new_values = {"$push": {"user_info.questions": q}}
+        try:
+            q = question_obj_to_dict(question)
+            my_query = {"user_info.chat_id": chat_id}
+            new_values = {"$push": {"user_info.questions": q}}
 
-        self.collection.update_one(my_query, new_values)
+            self.collection.update_one(my_query, new_values)
 
-        print("DEBUG::add_question() question added to database with "
-              "chat_id : " +
-              str(chat_id) + "and text " + question.text)
+        except Exception as E:
+            print(E)
 
     def add_data_to_question(self, chat_id, question_id, data):
         """Append a data point to specified question in Database."""
-        my_query = {"user_info.chat_id": chat_id}
-        new_values = {
-            "$push": {
-                "user_data.questions." + str(question_id): data
-            }
-        }
-        self.collection.update_one(my_query, new_values)
+        try:
+            my_query = {"user_info.chat_id": chat_id}
+            new_values = \
+                {
+                    "$push":
+                        {
+                            "user_data." + str(question_id): data
+                        }
+                }
+            self.collection.update_one(my_query, new_values)
 
-    def change_question_attr(self, chat_id, question_id, attr,
-                             new_val):
-        my_query = {"chat_id": chat_id}
-        new_values = {
-            "$set":
-                {"questions." + str(question_id) +
-                 "." + str(attr): new_val
-                 }
-        }
-
-        self.collection.update_one(my_query, new_values)
-
-    def user_exists(self, chat_id):
-        """Returns True if the chat_id is already in the DB."""
-        user = self.collection.find_one(
-            {"user_info.chat_id": chat_id})
-        return user is not None
+        except Exception as E:
+            print(E)
 
     def get_all_users(self):
         """Returns a Dict of all user objects in the database."""
-        users = {}
-        for user_dict in self.collection.find():
-            # create a user obj
-            cid = user_dict["user_info"]["chat_id"]
-            user_obj = User(cid, self.database)
+        try:
+            users = {}
+            for user_dict in self.collection.find():
+                # create a user obj
+                cid = user_dict["user_info"]["chat_id"]
+                user_obj = User(cid)
 
-            pprint.pprint(user_dict)
+                #            pprint.pprint(user_dict)
 
-            for q_dict in user_dict["user_info"]["questions"]:
-                q_obj = question_dict_to_obj(q_dict)
+                for q_dict in user_dict["user_info"]["questions"]:
+                    q_obj = question_dict_to_obj(q_dict)
 
-                # append in the questions array and insert in db
-                user_obj.questions.append(q_obj)
+                    # append in the questions array and insert in db
+                    user_obj.questions.append(q_obj)
 
-            users[cid] = user_obj
+                users[cid] = user_obj
 
-        return users
+            return users
+
+        except Exception as E:
+            print(E)
 
 
 class User:
@@ -155,7 +212,6 @@ class User:
 
     def __init__(self, chat_id):
         """Initialise the unique chat_id and database."""
-        self.chat_id = 0  # unique chat_id
         self.question_id = 0  # counter for max question id
         self.next_question = 0  # index of next question to ask
         self.prev_question = 0  # index of last asked question
@@ -167,15 +223,18 @@ class User:
 
     def add_question(self, question):
         """Append question at end of question_list and database."""
-        # add the running question id
-        question.question_id = self.question_id
+        global actual_db
+        try:
+            # add the running question id
+            question.question_id = self.question_id
 
-        # append in the questions array and insert in db
-        self.questions.append(question)
-        actual_db.add_question(question, self.chat_id)
+            # append in the questions array and insert in db
+            self.questions.append(question)
+            actual_db.add_question(question, self.chat_id)
+            self.question_id += 1
 
-        # inc question_id
-        self.question_id += 1
+        except Exception as E:
+            print(E)
 
     def get_next_question(self):
         """Return the question object from question_list."""
@@ -192,20 +251,25 @@ class User:
                 self.prev_question = self.next_question
                 self.next_question += 1
                 return ret
-
         # exception on reaching EOF
         raise Exception("last question reached")
 
     def store_prev_question_response(self, response):
         """Store the user response in database."""
-        prev_q = self.questions[self.prev_question]
-        actual_db.add_data_to_question(self.chat_id,
+        global actual_db
+
+        try:
+            prev_q = self.questions[self.prev_question]
+            actual_db.add_data_to_question(self.chat_id,
                                            prev_q.question_id,
                                            response)
+        except Exception as E:
+            print(E)
 
 
 def test_add_questions_and_question_data():
     init()
+    global actual_db
     actual_db.collection.delete_many({})
     cid = 1234
     u1 = User(cid)

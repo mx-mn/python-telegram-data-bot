@@ -1,13 +1,14 @@
 from telegram import ReplyKeyboardMarkup
 import General
+import ClassDB
 
 
 def start(update, context):
     """Start the data collection process with user."""
     cid = update.message.chat_id
-    user = General.get_user(cid)
+    user = ClassDB.get_user(cid)
     user.next_question = 0
-    General.set_user(user)
+    ClassDB.set_user(user)
     return collect(update, context)
 
 
@@ -18,16 +19,17 @@ def collect(update, context):
     user-class. Then if there is a next question it will be asked.
     otherwise, will return to MENU.
     """
-    cid = update.message.chat_id
-    user = General.get_user(cid)
-
-    if user.next_question > 0:
-        user.store_prev_question_response(update.message.text)
-
     try:
+        cid = update.message.chat_id
+        user = ClassDB.get_user(cid)
+
+        if user.next_question > 0:
+            user.store_prev_question_response(update.message.text)
+
         question = user.get_next_question()
+
     except:
-        update.message.reply_text('No Questions left to answer')
+        update.message.reply_text('You are done!')
         return General.MENU
     else:
         reply_text = question.text

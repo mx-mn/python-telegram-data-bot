@@ -1,26 +1,17 @@
 
 from telegram.ext import Updater, ConversationHandler, CommandHandler, MessageHandler, Filters
 import General
+import basic
 import mining
 import add
-from ClassDB import Database
-
-
-def default(update, context):
-    print("default triggered")
-    update.message.reply_text('default triggered. try /start')
-
-
-def fallback(update, context):
-    print("fallback triggered")
-    update.message.reply_text('fallback triggered. try /start')
+import ClassDB
 
 
 def main():
     bot_token = "772700511:AAGDECkjwAt1bePvmz_jdLlWworqHm0aO68"
 
     # db.collection.delete_many({})
-    General.init()
+    ClassDB.init()
 
     updater = Updater(bot_token, use_context=True)
     dispatcher = updater.dispatcher
@@ -32,8 +23,8 @@ def main():
         # the start of the conversation.
         # Type:	List[telegram.ext.Handler]
         entry_points=[
-            CommandHandler(General.cmd_start, General.cmd_start_func),
-            MessageHandler(Filters.all, default)],
+            CommandHandler(General.cmd_start, basic.start_conversation),
+            MessageHandler(Filters.all, basic.default)],
 
         # A dict that defines the different states of conversation
         # a user can be in and one or more associated Handler
@@ -49,8 +40,7 @@ def main():
                                add.start),
                 # CommandHandler(conversation.cmd_edit, conversation.cmd_edit_func),
                 # CommandHandler(conversation.cmd_timer, conversation.cmd_timer_func),
-                MessageHandler(Filters.all,
-                               default)
+                MessageHandler(Filters.all, basic.default)
             ],
             General.MINING:
             [
@@ -88,7 +78,7 @@ def main():
         # conversation, but every handler for their current
         # state returned False on check_update.
         # Type:	List[telegram.ext.Handler]
-        fallbacks=[CommandHandler('cancel', fallback)]
+        fallbacks=[CommandHandler('cancel', basic.fallback)]
     )
     dispatcher.add_handler(conversation_handler)
     print("start polling...")
