@@ -2,7 +2,6 @@ import General
 import ClassDB
 from telegram import ReplyKeyboardMarkup
 
-latest_question = "new_question"
 create_keyb_cmd_list = [General.cmd_prev_col,
                         General.cmd_prev_row,
                         General.cmd_next_row,
@@ -23,11 +22,9 @@ def question_text_defined(update, context):
         user.temp_question = ClassDB.Question()
         user.temp_question.text = update.message.text
 
-        reply_text = 'Choose a Keyboard or create a new one'
-        reply_markup = ReplyKeyboardMarkup.from_row(
-            General.all_keyboards, one_time_keyboard=True)
-        update.message.reply_text(reply_text,
-                                  reply_markup=reply_markup)
+        text = 'Choose a Keyboard or create a new one'
+        markup = General.markup_keyboard_overview
+        update.message.reply_text(text, reply_markup=markup)
 
         return General.ADD2
 
@@ -41,7 +38,7 @@ def std_keyb_used(update, context):
         user = ClassDB.get_user(cid)
         user.temp_question.is_custom = False
 
-        return keyb_done(update, context)
+        return done(update, context)
 
     except Exception as E:
         print(E)
@@ -116,15 +113,14 @@ def set_key(update, context):
     update.message.reply_text(reply_text)
 
 
-def keyb_done(update, context):
+def done(update, context):
     try:
         cid = update.message.chat_id
         user = ClassDB.get_user(cid)
         user.add_question(user.temp_question)
-        reply_text = "Great, I like it!" + '\n' \
-                     + ClassDB.sprint_cmd_list(General.menu_cmd_list)
-
-        update.message.reply_text(reply_text)
+        text = "Great, I like it!"
+        markup = General.markup_menu
+        update.message.reply_text(text, reply_markup=markup)
         return General.MENU
 
     except Exception as E:

@@ -15,7 +15,8 @@
   "user_data" :
 
     {
-      <question_id> :  [data1, data2, data3]
+      <question_id> : [data1, data2, data3],
+      <question_id> : []
     }
 
 }

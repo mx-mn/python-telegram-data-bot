@@ -1,7 +1,11 @@
 from pymongo import MongoClient
 from telegram import ReplyKeyboardMarkup
 
+import iso8601
+
+# actual_users: Dict[int, User]  # Dict[ chat_id : User_obj]
 global actual_users
+# actual_db: Database
 global actual_db
 
 
@@ -73,7 +77,7 @@ class Question:
     def set_key(self, text, x, y):
         try:
             if (y > len(self.keyboard)) or (
-                    x > len(self.Keyboard[y])):
+                    x > len(self.keyboard[y])):
                 print("out of bounds")
             else:
                 self.keyboard[x][y] = text
@@ -138,6 +142,21 @@ class Database:
         except Exception as E:
             print(E)
 
+    def set_notify_time(self, cid, notify_time):
+        """Adds the notify_time to specified user"""
+        try:
+            my_query = {"user_info.chat_id": cid}
+            print(notify_time.isoformat())
+            new_values = \
+                {
+                    "$set": {"user_info.notify_time":
+                                  notify_time.isoformat()}
+                }
+            self.collection.update_one(my_query, new_values)
+
+        except Exception as E:
+            print(E)
+
     def add_user(self, user):
         """Add a user obj to the Database."""
         try:
@@ -145,7 +164,7 @@ class Database:
                 {
                     "user_info": {
                         "chat_id": user.chat_id,
-                        "notify_time": user.notify_time,
+                        "notify_time": None,
                         "questions": user.questions
                     },
                     "user_data": {}
@@ -191,7 +210,7 @@ class Database:
                 cid = user_dict["user_info"]["chat_id"]
                 user_obj = User(cid)
 
-                #            pprint.pprint(user_dict)
+                #  TODO: also get notify_time from Database
 
                 for q_dict in user_dict["user_info"]["questions"]:
                     q_obj = question_dict_to_obj(q_dict)
@@ -215,11 +234,20 @@ class User:
         self.question_id = 0  # counter for max question id
         self.next_question = 0  # index of next question to ask
         self.prev_question = 0  # index of last asked question
-        self.notify_time = None  # time of notification
+        self.notify_time = None  # the utc time of notification
+        self.timer_job = None  # timer_job for notification
         self.questions = []  # contains question objects
         self.temp_question = None  # container for question generation
         self.chat_id = chat_id  # unique chat_id
         print("user instance " + str(self.chat_id) + " created")
+
+    def set_notify_time(self, notify_time):
+        try:
+            global actual_db
+            self.timer_job = notify_time
+            actual_db.set_notify_time(self.chat_id, notify_time)
+        except Exception as E:
+            print(E)
 
     def add_question(self, question):
         """Append question at end of question_list and database."""
@@ -291,5 +319,7 @@ def test_add_questions_and_question_data():
     actual_db.add_data_to_question(cid, 2, "poirt")
     actual_db.add_data_to_question(cid, 2, "dafaso")
 
+
 # test1()
 # test_add_questions_and_question_data()
+"""Global Variables."""

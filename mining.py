@@ -29,7 +29,12 @@ def collect(update, context):
         question = user.get_next_question()
 
     except:
-        update.message.reply_text('You are done!')
+        cid = update.message.chat_id
+        user = ClassDB.get_user(cid)
+        text = 'You are done! Congrats for another successful ' \
+               'day!'
+        markup = General.markup_menu
+        update.message.reply_text(text, reply_markup=markup)
         return General.MENU
     else:
         reply_text = question.text
