@@ -9,14 +9,13 @@ global actual_users
 global actual_db
 
 
-def init():
+def init(connection_string, database_name,
+         collection_name):
     global actual_users
     global actual_db
 
-    actual_db = Database(
-        "mongodb+srv://MASTER:9NZc9agZd21YP9nL@cluster0.umetu"
-        ".azure.mongodb.net/mydatabase?retryWrites=true&w"
-        "=majority", "mydatabase", "python_telegram_bot")
+    actual_db = Database(connection_string, database_name,
+                         collection_name)
 
     # TODO: comment the reset
     # actual_db.collection.delete_many({})
@@ -150,7 +149,7 @@ class Database:
             new_values = \
                 {
                     "$set": {"user_info.notify_time":
-                                  notify_time.isoformat()}
+                                 notify_time.isoformat()}
                 }
             self.collection.update_one(my_query, new_values)
 

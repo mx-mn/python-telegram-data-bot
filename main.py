@@ -1,24 +1,24 @@
-
-from telegram.ext import Updater, ConversationHandler, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, ConversationHandler, CommandHandler, \
+    MessageHandler, Filters
 import General
 import basic
 import mining
 import add
 import timer
 import ClassDB
+import credentials
 
 
 def main():
-    bot_token = "772700511:AAGDECkjwAt1bePvmz_jdLlWworqHm0aO68"
-
     # db.collection.delete_many({})
 
-    updater = Updater(bot_token, use_context=True)
+    updater = Updater(credentials.bot_token, use_context=True)
     dispatcher = updater.dispatcher
     job_queue = updater.job_queue
     job_queue.set_dispatcher(dispatcher)
 
-    ClassDB.init()
+    ClassDB.init(credentials.connection_string, credentials.database_name,
+                 credentials.collection_name)
 
     conversation_handler = ConversationHandler(
 
@@ -26,7 +26,8 @@ def main():
         # the start of the conversation.
         # Type:	List[telegram.ext.Handler]
         entry_points=[
-            CommandHandler(General.cmd_start, basic.start_conversation),
+            CommandHandler(General.cmd_start,
+                           basic.start_conversation),
             MessageHandler(Filters.all, basic.default)],
 
         # A dict that defines the different states of conversation
@@ -36,39 +37,40 @@ def main():
         states=
         {
             General.MENU:
-            [
-                CommandHandler(General.cmd_mining,
-                               mining.start),
-                CommandHandler(General.cmd_add,
-                               add.start),
-                CommandHandler(General.cmd_edit,
-                               basic.default),
-                CommandHandler(General.cmd_timer,
-                               timer.start),
-                CommandHandler(General.delay5, timer.delay5),
-                CommandHandler(General.delay60, timer.delay60),
-                CommandHandler(General.delay180, timer.delay180),
-                CommandHandler(General.delay_today,
-                               timer.delay_today),
-                MessageHandler(Filters.all, basic.use_custom_keyb),
-            ],
+                [
+                    CommandHandler(General.cmd_mining,
+                                   mining.start),
+                    CommandHandler(General.cmd_add,
+                                   add.start),
+                    CommandHandler(General.cmd_edit,
+                                   basic.default),
+                    CommandHandler(General.cmd_timer,
+                                   timer.start),
+                    CommandHandler(General.delay5, timer.delay5),
+                    CommandHandler(General.delay60, timer.delay60),
+                    CommandHandler(General.delay180, timer.delay180),
+                    CommandHandler(General.delay_today,
+                                   timer.delay_today),
+                    MessageHandler(Filters.all,
+                                   basic.use_custom_keyb),
+                ],
             General.MINING:
-            [
-                MessageHandler(Filters.text,
-                               mining.collect)
-            ],
+                [
+                    MessageHandler(Filters.text,
+                                   mining.collect)
+                ],
             General.ADD1:
-            [
-                MessageHandler(Filters.text,
-                               add.question_text_defined)
-            ],
+                [
+                    MessageHandler(Filters.text,
+                                   add.question_text_defined)
+                ],
             General.ADD2:
-            [
-                MessageHandler(Filters.text(General.normal),
-                               add.std_keyb_used),
-                MessageHandler(Filters.text(General.new_custom),
-                               add.use_custom_keyb),
-            ],
+                [
+                    MessageHandler(Filters.text(General.normal),
+                                   add.std_keyb_used),
+                    MessageHandler(Filters.text(General.new_custom),
+                                   add.use_custom_keyb),
+                ],
             General.ADD3:
                 [
                     CommandHandler(General.cmd_next_row,
@@ -84,7 +86,8 @@ def main():
                 ],
             General.TIMER1:
                 [
-                    CommandHandler(General.cmd_stop_timer, timer.stop),
+                    CommandHandler(General.cmd_stop_timer,
+                                   timer.stop),
                     MessageHandler(Filters.regex('^([0-1]?[0-9]|2['
                                                  '0-3]):[0-5]['
                                                  '0-9]$'),
