@@ -10,7 +10,11 @@ import credentials
 
 
 def main():
+<<<<<<< HEAD
     # db.collection.delete_many({})
+=======
+    bot_token = "TOKEN"
+>>>>>>> ca5d92addafbe22302d106cc7e790fe42222a4af
 
     updater = Updater(credentials.bot_token, use_context=True)
     dispatcher = updater.dispatcher
