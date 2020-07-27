@@ -19,10 +19,10 @@ def question_text_defined(update, context):
     try:
         cid = update.message.chat_id
         user = ClassDB.get_user(cid)
-        user.temp_question = ClassDB.Question()
-        user.temp_question.text = update.message.text
+        user.temp_question = ClassDB.Question(update.message.text,
+                                              user.question_id)
 
-        text = 'Choose a Keyboard or create a new one'
+        text = 'Choose a Keyboard or create a new one!'
         markup = General.markup_keyboard_overview
         update.message.reply_text(text, reply_markup=markup)
 

@@ -176,9 +176,15 @@ class Database:
     def add_question(self, question, chat_id):
         try:
             q = question_obj_to_dict(question)
+            # add the new question
             my_query = {"user_info.chat_id": chat_id}
             new_values = {"$push": {"user_info.questions": q}}
+            self.collection.update_one(my_query, new_values)
 
+            # add the question id
+            my_query = {"user_info.chat_id": chat_id}
+            new_values = {"$set": {"user_info.question_id":
+                                       question.question_id}}
             self.collection.update_one(my_query, new_values)
 
         except Exception as E:
