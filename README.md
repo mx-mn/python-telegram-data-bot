@@ -1,6 +1,13 @@
 # python-telegram-data-bot
 ## the one bot for your needs
+## What to install
+```
+pip install python-telegram-bot
+pip install pytz
+pip install pymongo
+pip install iso8601
 
+```
 ## Telegram Web API
 Telegram provides a great API for bots.
 ## python-telegram-bot Wrapper
