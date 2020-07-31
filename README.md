@@ -6,7 +6,7 @@ pip install python-telegram-bot
 pip install pytz
 pip install pymongo
 pip install iso8601
-
+pip install dnspython
 ```
 ## Telegram Web API
 Telegram provides a great API for bots.
