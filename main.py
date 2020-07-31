@@ -10,9 +10,6 @@ import credentials
 
 
 def main():
-
-    # db.collection.delete_many({})
-
     updater = Updater(credentials.bot_token, use_context=True)
     dispatcher = updater.dispatcher
     job_queue = updater.job_queue

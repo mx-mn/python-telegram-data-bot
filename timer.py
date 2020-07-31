@@ -1,9 +1,9 @@
-import General
-import ClassDB
-from datetime import time, tzinfo, timedelta
-import pytz
-from telegram import ReplyKeyboardMarkup
+from datetime import time
 
+import pytz
+
+import ClassDB
+import General
 
 def start(update, context):
     """Starting point of the timer conversation."""

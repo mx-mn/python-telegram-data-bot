@@ -1,6 +1,5 @@
 import General
 import ClassDB
-from telegram import ReplyKeyboardMarkup
 
 create_keyb_cmd_list = [General.cmd_prev_col,
                         General.cmd_prev_row,
